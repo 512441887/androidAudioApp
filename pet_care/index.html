@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>随机码生成工具</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #68758a;
+      --primary: #126c7a;
+      --primary-dark: #0d5560;
+      --accent: #f2b84b;
+      --line: #dce4ef;
+      --shadow: 0 22px 60px rgba(31, 46, 71, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(135deg, rgba(18, 108, 122, 0.12), transparent 36%),
+        linear-gradient(315deg, rgba(242, 184, 75, 0.16), transparent 38%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    main {
+      width: min(100%, 720px);
+      background: var(--panel);
+      border: 1px solid rgba(220, 228, 239, 0.85);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 34px 36px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .content {
+      padding: 30px 36px 36px;
+    }
+
+    .display {
+      min-height: 170px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfe;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+      padding: 28px;
+    }
+
+    .code-wrap {
+      min-width: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .code {
+      font-size: clamp(64px, 18vw, 132px);
+      font-weight: 800;
+      line-height: 1;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mascot {
+      width: clamp(104px, 22vw, 156px);
+      aspect-ratio: 1;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      object-fit: cover;
+      filter: drop-shadow(0 16px 22px rgba(31, 46, 71, 0.18));
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .generate {
+      min-height: 56px;
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 12px 28px rgba(18, 108, 122, 0.24);
+      font-size: 18px;
+    }
+
+    .generate:hover,
+    .generate:focus-visible {
+      background: var(--primary-dark);
+    }
+
+    .copy {
+      min-width: 132px;
+      min-height: 56px;
+      color: var(--primary-dark);
+      background: #e8f4f6;
+      border: 1px solid rgba(18, 108, 122, 0.22);
+    }
+
+    .copy:hover,
+    .copy:focus-visible {
+      background: #d8eef1;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .history {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .history-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .clear {
+      color: var(--muted);
+      background: transparent;
+      padding: 8px 10px;
+      font-weight: 600;
+    }
+
+    .clear:hover,
+    .clear:focus-visible {
+      color: var(--text);
+      background: #f0f4f9;
+    }
+
+    .list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 10px;
+      min-height: 44px;
+    }
+
+    .item,
+    .empty {
+      min-height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .item {
+      background: #fff8e7;
+      border: 1px solid rgba(242, 184, 75, 0.42);
+      color: #7b5412;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      background: #f7f9fc;
+      border: 1px dashed var(--line);
+      font-weight: 500;
+    }
+
+    .toast {
+      min-height: 22px;
+      color: var(--primary-dark);
+      font-size: 14px;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 16px;
+      }
+
+      .header,
+      .content {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .copy {
+        width: 100%;
+      }
+
+      .meta {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .display {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 22px;
+      }
+
+      .mascot {
+        width: 116px;
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="header">
+      <h1>随机码生成工具</h1>
+      <p class="subtitle">点击生成 1-200 范围内的随机数字码，可复制当前结果并查看最近记录。</p>
+    </section>
+
+    <section class="content">
+      <div class="display" aria-live="polite">
+        <div class="code-wrap">
+          <div class="code" id="code">--</div>
+        </div>
+        <img class="mascot" alt="Q版狼尊形象" src="assets/wolf-lord-chibi.png" />
+      </div>
+
+      <div class="controls">
+        <button class="generate" id="generate" type="button">生成随机码</button>
+        <button class="copy" id="copy" type="button">复制结果</button>
+      </div>
+
+      <div class="meta">
+        <span>生成范围：1 - 200</span>
+        <span id="count">已生成 0 次</span>
+      </div>
+
+      <section class="history">
+        <div class="history-title">
+          <h2>最近记录</h2>
+          <button class="clear" id="clear" type="button">清空</button>
+        </div>
+        <div class="list" id="history">
+          <div class="empty">暂无记录</div>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const MIN = 1;
+    const MAX = 200;
+    const MAX_HISTORY = 20;
+
+    const codeEl = document.getElementById("code");
+    const generateBtn = document.getElementById("generate");
+    const copyBtn = document.getElementById("copy");
+    const clearBtn = document.getElementById("clear");
+    const historyEl = document.getElementById("history");
+    const countEl = document.getElementById("count");
+    const toastEl = document.getElementById("toast");
+
+    let currentCode = "";
+    let total = 0;
+    let history = [];
+    let toastTimer = null;
+
+    function randomCode() {
+      return Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    }
+
+    function showToast(message) {
+      window.clearTimeout(toastTimer);
+      toastEl.textContent = message;
+      toastTimer = window.setTimeout(() => {
+        toastEl.textContent = "";
+      }, 1800);
+    }
+
+    function renderHistory() {
+      countEl.textContent = `已生成 ${total} 次`;
+
+      if (history.length === 0) {
+        historyEl.innerHTML = '<div class="empty">暂无记录</div>';
+        return;
+      }
+
+      historyEl.innerHTML = history
+        .map((item) => `<div class="item">${item}</div>`)
+        .join("");
+    }
+
+    function generate() {
+      currentCode = String(randomCode());
+      total += 1;
+      history = [currentCode, ...history].slice(0, MAX_HISTORY);
+      codeEl.textContent = currentCode;
+      renderHistory();
+      showToast("已生成新随机码");
+    }
+
+    async function copyCode() {
+      if (!currentCode) {
+        showToast("请先生成随机码");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(currentCode);
+        showToast("已复制到剪贴板");
+      } catch (error) {
+        showToast("当前浏览器不支持自动复制");
+      }
+    }
+
+    function clearHistory() {
+      history = [];
+      total = 0;
+      currentCode = "";
+      codeEl.textContent = "--";
+      renderHistory();
+      showToast("记录已清空");
+    }
+
+    generateBtn.addEventListener("click", generate);
+    copyBtn.addEventListener("click", copyCode);
+    clearBtn.addEventListener("click", clearHistory);
+
+    renderHistory();
+  </script>
+</body>
+</html>
